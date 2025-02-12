@@ -63,5 +63,6 @@ def upload_file():
     return send_file(file_path, as_attachment=True, download_name="result.csv")
 
 if __name__ == '__main__':
-    app.run(port=5050, debug=True)
+    pass
+    # app.run(port=5050, debug=True)
 
