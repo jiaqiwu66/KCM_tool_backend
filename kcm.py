@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__)
 cors = CORS(app, origins="*")
+
+split_result = {}
 @app.route('/upload', methods=['POST'])
 def upload_file():
 
@@ -17,17 +19,17 @@ def upload_file():
     print(operational)
     print(base)
 
-    # # read CSV file
+    # # 读取CSV文件
     df = pd.read_csv(operational)
     def categorize_split(row):
         if row['Vehicle Size'] == 40:
-            result = (row['Distance\n(mi)'] * 2.08) / (525 * 0.7)
+            result = (row['Distance\n(mi)'] * 2.08) / 525
         elif row['Vehicle Size'] == 60:
-            result = (row['Distance\n(mi)'] * 2.9) / (525 * 0.7)
+            result = (row['Distance\n(mi)'] * 2.9) / 525
         else:
             return "Unknown"  # Others mark as Unknown
 
-        # sort based on results
+        # 根据计算结果进行分类
         if result < 1:
 
             return "no split needed"
@@ -43,26 +45,46 @@ def upload_file():
     no_split = (df['split category'] == 'no split needed').sum()
     one_split = (df['split category'] == 'one split').sum()
     two_split = (df['split category'] == 'two split or more').sum()
-    # save as new CSV file
+    # 保存新的CSV文件
     output_file = "processed_file.csv"
     df.to_csv(output_file, index=False)
 
     print(f"Save the result to {output_file}")
 
-    data = {
-        'message': 'Data fetched successfully!',
-        'data': {
-            'no_split': str(no_split),
-            'one_split': str(one_split),
-            'two_split': str(two_split),
-        }
-    }
+    split_result['one_split'] = int(one_split)
+    split_result['two_split'] = int(two_split)
+    split_result['no_split'] = int(no_split)
+    split_result['total'] = int(no_split + one_split + two_split)
+
     # return the statistics result
     # return jsonify(data), 200
-    file_path = os.path.join(app.root_path, 'processed_file.csv')
-    return send_file(file_path, as_attachment=True, download_name="result.csv")
 
-if __name__ == '__main__':
-    pass
-    # app.run(port=5050, debug=True)
+    file_path = os.path.abspath('/home/jwu66/processed_file.csv')
+    return send_file(file_path, as_attachment=True, download_name="result.csv", cache_timeout=0)
+
+
+@app.route("/getResult", methods=["GET"])
+def get_result():
+
+    if not split_result:
+        return jsonify({'message': 'No data available'}), 400
+    return jsonify(split_result)
+
+
+
+
+
+    # file_path = os.path.abspath('/home/jwu66/processed_file.csv')
+    # return send_file(file_path, as_attachment=True, download_name="result.csv", cache_timeout=0)
+
+    # file_path = "processed_file.csv"
+
+    # with open(file_path, "rb") as f:
+    #     data = f.read()
+
+    # return Response(
+    #     data,
+    #     mimetype="text/csv",
+    #     headers={"Content-Disposition": "attachment; filename=result.csv"}
+    # )
 
