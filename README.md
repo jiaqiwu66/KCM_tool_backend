@@ -15,7 +15,7 @@ Please follow the next step to run the back-end in local:
 ```
 git clone https://github.com/jiaqiwu66/KCM_tool_backend
 ```
-- Install the required python package by `requirement.txt` file
+- Install the required python package by `requirements.txt` file
 ```
 # for Windows OS
 pip install -r requirements.txt
